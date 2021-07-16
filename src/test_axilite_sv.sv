@@ -15,6 +15,7 @@ module testbench();
  parameter period_axi_clk = 8.138ns; // 122.8 MHz
  parameter period_adc_clk = 6.510ns; // 153.6 MHz
  parameter aresetn = period_axi_clk * 16; // minimum for axi interface
+ parameter str_aresetn = period_adc_clk * 10;
  
 	// Clock signal
   bit 	clock_p;
@@ -38,7 +39,7 @@ module testbench();
 	bit [31:0]  m_axi_rdata;  
 	bit		 	m_axi_rvalid, m_axi_rready;
 	
-	bit			m_axis_tvalid, m_axis_tready;
+	bit			m_axis_tvalid, m_axis_tready, m_axis_aresetn;
 	bit	[31:0]	m_axis_tdata;
 
 
@@ -54,20 +55,33 @@ module testbench();
     bit [31:0]      data_rd1;
     bit [31:0]      data_rd2;
 
+	integer 		i;
  // axi aresetn
   initial begin
-    reset <= 1'b0;
-    #aresetn;
+    reset 			<= 1'b0;
+    #aresetn
   	@(posedge clock_axi);
-  	reset <= 1'b1;
-	data_p = 0;
+  	reset 			<= 1'b1;
+  end
+  
+  // axi_stream resetn
+  initial begin
+  		m_axis_aresetn	<= 1'b0;
+  		#str_aresetn
+  	@(posedge clock_p);
+		data_p 			<= 0;
+		m_axis_aresetn 	<= 1'b1;
+//		#351.767ns
+//		m_axis_aresetn 	<= 1'b0;
+//		#str_aresetn
+//		m_axis_aresetn 	<= 1'b1;
   end
   
   // counter data_in ddr lvds
   always @(posedge clock_p or negedge clock_p)
   	begin
-	data_p = data_p + 1;
-	data_n = ~data_p;
+		data_p = data_p + 1;
+		data_n = ~data_p;
 	end	
   
   // clocks
@@ -115,7 +129,7 @@ axi_vip_0 axi_vip_0_inst(
 // axi_stream vip
  axi4stream_vip_0 axi4stream_vip_0_inst(
   .aclk				(clock_p),
-  .aresetn			(1'b1),
+  .aresetn			(m_axis_aresetn),
   .s_axis_tvalid	(m_axis_tvalid),
   .s_axis_tready	(m_axis_tready),
   .s_axis_tdata		(m_axis_tdata)
@@ -123,6 +137,7 @@ axi_vip_0 axi_vip_0_inst(
 
 top_module DUT (
 	.m_axis_aclk		(clock_p),
+	.m_axis_aresetn		(m_axis_aresetn),
 	.clk_p				(clock_p), 
 	.clk_n				(clock_n), 
 	.data_in_p			(data_p), 
@@ -155,47 +170,50 @@ top_module DUT (
 );
 
 
-
 axi_vip_0_mst_t 		master_agent;
 axi4stream_vip_0_slv_t 	slv_agent;
 
 
 // axi-stream vip
 initial begin
-//	slv_agent = new("slave vip agent",testbench.DUT.design_1_i.axi4stream_vip_0.inst.IF);
-	slv_agent = new("slave vip agent",testbench.axi4stream_vip_0_inst.inst.IF);
-	slv_agent.start_slave();
-	ready_gen = slv_agent.driver.create_ready("ready_gen");
- 	ready_gen.set_ready_policy(XIL_AXI4STREAM_READY_GEN_OSC);
- 	ready_gen.set_low_time(1);
- 	ready_gen.set_high_time(200);
- 	slv_agent.driver.send_tready(ready_gen);
- 	ready_gen = slv_agent.driver.create_ready("ready_gen 2");
- 	ready_gen.set_ready_policy(XIL_AXI4STREAM_READY_GEN_SINGLE);
- 	ready_gen.set_high_time(100);
- 	slv_agent.driver.send_tready(ready_gen);
+////	slv_agent = new("slave vip agent",testbench.DUT.design_1_i.axi4stream_vip_0.inst.IF);
+//	slv_agent = new("slave vip agent",testbench.axi4stream_vip_0_inst.inst.IF);
+//	slv_agent.start_slave();
+//	ready_gen = slv_agent.driver.create_ready("ready_gen");
+// 	ready_gen.set_ready_policy(XIL_AXI4STREAM_READY_GEN_OSC);
+// 	ready_gen.set_low_time(1);
+// 	ready_gen.set_high_time(200);
+// 	slv_agent.driver.send_tready(ready_gen);
+// 	ready_gen = slv_agent.driver.create_ready("ready_gen 2");
+// 	ready_gen.set_ready_policy(XIL_AXI4STREAM_READY_GEN_SINGLE);
+// 	ready_gen.set_high_time(100);
+// 	slv_agent.driver.send_tready(ready_gen);
 end
 
  // axi-lite vip
 initial begin
-//    master_agent = new("master vip agent",testbench.DUT.design_1_i.axi_vip_0.inst.IF);
-    master_agent = new("master vip agent",testbench.axi_vip_0_inst.inst.IF);
-    // set tag for agents for easy debug
-    master_agent.set_agent_tag("Master VIP");
-    // set print out verbosity level.
-    master_agent.set_verbosity(400);
-    master_agent.start_master();
-    #(period_axi_clk*10)
-    master_agent.AXI4LITE_WRITE_BURST(addr1,prot,data_wr1,resp);
-    #(period_axi_clk*4)
-    master_agent.AXI4LITE_WRITE_BURST(addr1,prot,data_wr2,resp);
-    #(period_axi_clk*4)
-    master_agent.AXI4LITE_READ_BURST(addr1,prot,data_rd1,resp);
-    #(period_axi_clk*4)
-    master_agent.AXI4LITE_WRITE_BURST(addr1,prot,data_wr3,resp);
-    #(period_axi_clk*10)
-    master_agent.AXI4LITE_WRITE_BURST(addr1,prot,data_wr2,resp);
-    #(period_axi_clk*4)
-    master_agent.AXI4LITE_WRITE_BURST(addr1,prot,data_wr3,resp);
+////    master_agent = new("master vip agent",testbench.DUT.design_1_i.axi_vip_0.inst.IF);
+//    master_agent = new("master vip agent",testbench.axi_vip_0_inst.inst.IF);
+//    // set tag for agents for easy debug
+//    master_agent.set_agent_tag("Master VIP");
+//    // set print out verbosity level.
+//    master_agent.set_verbosity(400);
+//    master_agent.start_master();
+//    #(period_axi_clk*10)
+//	for (i = 0; i < 3; i++)
+//	begin
+//    	master_agent.AXI4LITE_WRITE_BURST(addr1,prot,data_wr1,resp);
+//    	#(period_axi_clk*4)
+//    	master_agent.AXI4LITE_WRITE_BURST(addr1,prot,data_wr2,resp);
+//    	#(period_axi_clk*4)
+//    	master_agent.AXI4LITE_READ_BURST(addr1,prot,data_rd1,resp);
+//    	#(period_axi_clk*4)
+//    	master_agent.AXI4LITE_WRITE_BURST(addr1,prot,data_wr3,resp);
+//    	#(period_axi_clk*10)
+//    	master_agent.AXI4LITE_WRITE_BURST(addr1,prot,data_wr2,resp);
+//    	#(period_axi_clk*4)
+//    	master_agent.AXI4LITE_WRITE_BURST(addr1,prot,data_wr3,resp);
+//    	#(period_axi_clk*5);
+//    end
 end
   endmodule

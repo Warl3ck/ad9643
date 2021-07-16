@@ -37,6 +37,7 @@ module top_module
         output	[1:0]						s_axi_rresp,
         output								s_axi_rvalid,
         // AXI-stream
+        input								m_axis_aresetn,
         output [31:0]   					m_axis_tdata,
 //        output          					m_axis_tlast,
         input          						m_axis_tready,
@@ -97,7 +98,7 @@ C_M_AXI_TDATA_WIDTH(AXI_STREAM_TDATA_WIDTH))
 		.data_en		(data_en_i),
 		.ddr_reset		(reset_i),
 		.m_axi_aclk		(m_axis_aclk),
-//		input 	wire  	m_axi_aresetn,
+		.m_axi_aresetn	(m_axis_aresetn),
 		.m_axi_tvalid	(m_axis_tvalid),
 		.m_axi_tdata	(m_axis_tdata),
 //		output 	wire 	[(C_M_AXI_TDATA_WIDTH/8)-1 : 0] m_axi_tstrb,

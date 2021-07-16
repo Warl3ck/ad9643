@@ -13,7 +13,7 @@
 		input 	wire 	ddr_reset,
 		// Ports of Axi Master Bus Interface M_AXI
 		input 	wire  	m_axi_aclk,
-//		input 	wire  	m_axi_aresetn,
+		input 	wire  	m_axi_aresetn,
 		output 	wire  	m_axi_tvalid,
 		output 	wire 	[C_M_AXI_TDATA_WIDTH-1 : 0] m_axi_tdata,
 //		output 	wire 	[(C_M_AXI_TDATA_WIDTH/8)-1 : 0] m_axi_tstrb,
@@ -67,11 +67,11 @@
       .SRTYPE("SYNC")       // Set/Reset type: "SYNC" or "ASYNC" 
    ) IDDR_inst (
       .Q1(ddc_data_q1[j]), 	// 1-bit output for positive edge of clock
-      .Q2(ddc_data_q2[j]),  		// 1-bit output for negative edge of clock
+      .Q2(ddc_data_q2[j]),  // 1-bit output for negative edge of clock
       .C(m_axi_aclk),       // 1-bit clock input
       .CE(ctrl_z[1]),    	// 1-bit clock enable input
       .D(adc_din[j]),   	// 1-bit DDR data input
-      .R(ctrl_z[0]),       	// 1-bit reset
+      .R(~m_axi_aresetn),   // 1-bit reset
       .S(1'b0)              // 1-bit set
    );
     	end 
@@ -80,14 +80,25 @@
 
 	always @(posedge m_axi_aclk)
     begin
-    	if (m_axi_tready & ctrl_z[1] == 1) begin
-        	m_axis_tdata_i  <= (DATA_WIDTH == 16) ? {ddc_data_q1,ddc_data_q2} : {msb_bits, ddc_data_q1, lsb_bits, ddc_data_q2};
-        	valid_i			<= {ctrl_z[1],valid_i[2:1]};
-		end else begin 
-        	m_axis_tdata_i 	<= 0;
-        	valid_i			<= 0;
-        end	
-	end
+    	if (~m_axi_aresetn) 
+    		begin
+    			m_axis_tdata_i 	<= 0;
+        		valid_i			<= 0;
+        	end 
+        else 
+        	begin	
+    			if (m_axi_tready & ctrl_z[1] == 1) 
+    				begin
+        				m_axis_tdata_i  <= (DATA_WIDTH == 16) ? {ddc_data_q1,ddc_data_q2} : {msb_bits, ddc_data_q1, lsb_bits, ddc_data_q2};
+        				valid_i			<= {ctrl_z[1],valid_i[2:1]};
+					end 
+				else 
+					begin 
+        				m_axis_tdata_i 	<= 0;
+        				valid_i			<= 0;
+        			end	
+				end
+		end		
 	
 	assign m_axi_tvalid = valid_i[0];
 	assign m_axi_tdata 	= m_axis_tdata_i;
