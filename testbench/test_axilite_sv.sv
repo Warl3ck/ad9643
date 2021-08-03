@@ -227,5 +227,6 @@ initial begin
     	#10ns
     	master_agent.AXI4LITE_READ_BURST(addr2,prot,data_rd1,resp);
     end
+     #1  $finish;
 end
   endmodule
