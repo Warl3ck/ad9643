@@ -163,7 +163,7 @@
 	  if ( s_axi_aresetn == 1'b0 )
 	    begin
 	      slv_reg0 <= 0;
-	      slv_reg1 <= 0;
+//	      slv_reg1 <= 0;
 	      slv_reg2 <= 0;
 	      slv_reg3 <= 0;
 	    end 
@@ -176,11 +176,11 @@
 	              if ( s_axi_wstrb[byte_index] == 1 ) begin
 	                slv_reg0[(byte_index*8) +: 8] <= s_axi_wdata[(byte_index*8) +: 8];
 	              end  
-	          2'h1:
-	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
-	              if ( s_axi_wstrb[byte_index] == 1 ) begin
-	                slv_reg1[(byte_index*8) +: 8] <= s_axi_wdata[(byte_index*8) +: 8];
-	              end  
+//	          2'h1:
+//	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+//	              if ( s_axi_wstrb[byte_index] == 1 ) begin
+//	                slv_reg1[(byte_index*8) +: 8] <= s_axi_wdata[(byte_index*8) +: 8];
+//	              end  
 	          2'h2:
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
 	              if ( s_axi_wstrb[byte_index] == 1 ) begin
@@ -323,8 +323,11 @@
 
 	always @( posedge s_axi_aclk )
 	begin
-		slv_reg1[0] <= adc_or_state;
-		slv_reg1[31:1] <= 0;
+		if ( s_axi_aresetn == 1'b0 )
+			slv_reg1 <= 0;
+		else	
+			slv_reg1[0] <= adc_or_state;
+//			slv_reg1[31:1] <= 0;
 	end	
 
 	assign delay_rst = slv_reg0[1];
