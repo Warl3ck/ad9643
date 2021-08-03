@@ -74,7 +74,7 @@ module testbench();
 		m_axis_aresetn 	<= 1'b1;
 		#198.55ns
 		adc_or_in_p		<= 1'b1;
-		#(period_adc_clk/2)
+		#(period_adc_clk)
 		adc_or_in_p		<= 1'b0;
 		
 //		#351.767ns
