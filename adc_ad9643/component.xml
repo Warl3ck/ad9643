@@ -313,7 +313,7 @@
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>ASSOCIATED_BUSIF</spirit:name>
-          <spirit:value spirit:id="BUSIFPARAM_VALUE.M_AXIS_ACLK.ASSOCIATED_BUSIF">m_axis_chA:m_axis_chB</spirit:value>
+          <spirit:value spirit:id="BUSIFPARAM_VALUE.M_AXIS_ACLK.ASSOCIATED_BUSIF">m_axis_chB:m_axis_chA</spirit:value>
         </spirit:parameter>
       </spirit:parameters>
     </spirit:busInterface>
@@ -1100,34 +1100,36 @@
       <xilinx:upgrades>
         <xilinx:canUpgradeFrom>nppgamma.ru:Logic:top_module:1.0</xilinx:canUpgradeFrom>
       </xilinx:upgrades>
-      <xilinx:coreCreationDateTime>2021-08-08T16:14:53Z</xilinx:coreCreationDateTime>
+      <xilinx:coreCreationDateTime>2021-08-08T17:01:47Z</xilinx:coreCreationDateTime>
       <xilinx:tags>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@4fa6d156_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@1bd5de3c_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@59e8aaf1_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@520c8b00_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@38a3444d_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@4d3687d9_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@4858c8a3_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@5bffa88c_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@76099f91_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@31ea8dcc_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@2efe033c_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@45d9e1a8_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@333c1a4f_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@24d44572_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@7e00eaac_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@126402df_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@356d862d_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@18c94be7_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@5ad8c7ec_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@64aafbcf_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
-        <xilinx:tag xilinx:name="ui.data.coregen.dd@2143abf3_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@3105bbfd_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5f84445_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@61c8c2cb_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2577a565_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2e61692e_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@411e8ea2_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@752adae_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@310a9ea3_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@30b9ad52_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@157a3598_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2ff98cb3_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2ab0daab_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@35fc6b98_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@40f66b9c_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5f9bcf32_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2e4f9de6_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@3d1b18d5_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6202d2a6_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2eb8b724_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@61fff106_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6fa6d975_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4f05b7c8_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@59bf90be_ARCHIVE_LOCATION">x:/ip_repo/adc_ad9643</xilinx:tag>
       </xilinx:tags>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2020.1</xilinx:xilinxVersion>
-      <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="f2af88ff"/>
+      <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="a0f32f88"/>
       <xilinx:checksum xilinx:scope="memoryMaps" xilinx:value="eed88181"/>
       <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="e8eca15d"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="0c90882d"/>
