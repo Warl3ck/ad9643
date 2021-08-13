@@ -15,31 +15,32 @@
 		// Ports of Axi Master Bus Interface M_AXI
 		output 	wire  	m_axis_aclk,
 		input 	wire  	m_axi_aresetn,
-		input 	wire  	m_axi_tready,
 		output	wire	adc_data_rdy,
 		// channel A
+		input 	wire  	m_axi_tready_chA,
 		output 	wire  	m_axi_tvalid_chA,
 		output 	wire 	[15:0] m_axi_tdata_chA,
 		// channel B
+		input 	wire  	m_axi_tready_chB,
 		output 	wire  	m_axi_tvalid_chB,
 		output 	wire 	[15:0] m_axi_tdata_chB
 	);
 	
 	wire	data_en_i;
 	wire	adc_dat_rdy_i;
-	reg		[1:0]	valid_i;
 	reg		[((M_AXI_DATA_WIDTH == 16) ? 16-M_AXI_DATA_WIDTH:0)-1:0]	msb_bits;
 	wire 	[M_AXI_DATA_WIDTH-1:0]	ddr_data_q1;
 	wire 	[M_AXI_DATA_WIDTH-1:0]	ddr_data_q2;
+	wire	[2*M_AXI_DATA_WIDTH-1:0] ddr_data;
 	reg		[15:0]	m_axi_tdata_chA_i;
 	reg		[15:0]	m_axi_tdata_chB_i;
+	wire	[2*M_AXI_DATA_WIDTH-1:0] delayed_data [0:10];
 	reg		m_axi_tvalid_chA_i;
 	reg		m_axi_tvalid_chB_i;
 	// or
 	wire 	or_b, or_a; 
 	wire	[1:0] adc_or_ab_i;
-	reg		[1:0] adc_rdy_a;
-	reg 	adc_rdy_b;
+	reg 	adc_rdy_a, adc_rdy_b;
 					
 	initial
 	begin
@@ -83,19 +84,19 @@
       .src_in(adc_or_ab_i)      
    );
    
-   // shift regs OR
+
    always @(posedge m_axi_aclk)
    begin
    	if (~m_axi_aresetn) begin
-   		adc_rdy_a <= 2'b0;
+   		adc_rdy_a <= 1'b0;
 		adc_rdy_b <= 1'b0;
 	end else begin	
-   		adc_rdy_a	<= {or_a, adc_rdy_a[1]};
+   		adc_rdy_a	<= or_a;
    		adc_rdy_b	<= or_b;
    	end
    end
    
-	assign adc_dat_rdy_i = adc_rdy_a[0] || adc_rdy_b;
+	assign adc_dat_rdy_i = adc_rdy_a || adc_rdy_b;
 	//**************************************************
 
 	//************************************************** ADC_DATA and create valid signals
@@ -114,36 +115,67 @@
       .src_in(ddr_data_en)		
    );
 
-	 // IDDR Register
+	
+   
+	// IDDR Register
     genvar j;
     generate
     	for (j = 0; j < M_AXI_DATA_WIDTH; j = j + 1)   
     		begin
     IDDR #(
       .DDR_CLK_EDGE("SAME_EDGE_PIPELINED"),
-      .INIT_Q1(1'b0),       // Initial value of Q1: 1'b0 or 1'b1
-      .INIT_Q2(1'b0),       // Initial value of Q2: 1'b0 or 1'b1
-      .SRTYPE("SYNC")       // Set/Reset type: "SYNC" or "ASYNC" 
+      .INIT_Q1(1'b0),       	// Initial value of Q1: 1'b0 or 1'b1
+      .INIT_Q2(1'b0),       	// Initial value of Q2: 1'b0 or 1'b1
+      .SRTYPE("SYNC")       	// Set/Reset type: "SYNC" or "ASYNC" 
    ) IDDR_inst (
-      .Q1(ddr_data_q1[j]), 	// 1-bit output for positive edge of clock
-      .Q2(ddr_data_q2[j]),  // 1-bit output for negative edge of clock
-      .C(m_axi_aclk),       // 1-bit clock input
-      .CE(data_en_i),    	// 1-bit clock enable input
-      .D(adc_din[j]),   	// 1-bit DDR data input
-      .R(~m_axi_aresetn),   // 1-bit reset
-      .S(1'b0)  			// 1-bit set
+      .Q1(ddr_data_q1[j]), 		// 1-bit output for positive edge of clock
+      .Q2(ddr_data_q2[j]),  	// 1-bit output for negative edge of clock
+      .C(m_axi_aclk),       	// 1-bit clock input
+      .CE(1'b1),    			// 1-bit clock enable input
+      .D(adc_din[j]),  			// 1-bit DDR data input
+      .R(~m_axi_aresetn),   	// 1-bit reset
+      .S(1'b0)  				// 1-bit set
    );
     	end 
    endgenerate
-
-	// shift reg tvalid channels
+   
+   
+   	// delay data_signal (signal or) 
+   	assign ddr_data = {ddr_data_q1, ddr_data_q2};
+	assign delayed_data[0] = ddr_data; 
+	
+	genvar i,k;
+    generate
+    	for (i = 0; i < 2*M_AXI_DATA_WIDTH; i = i + 1) begin
+    		for (k = 0; k < 11; k = k + 1) begin
+	FDRE #(
+      .INIT(1'b0) 					// Initial value of register (1'b0 or 1'b1)
+   ) FDRE_inst (
+      .Q(delayed_data[k+1][i]),  	// 1-bit Data output
+      .C(m_axi_aclk),      			// 1-bit Clock input
+      .CE(1'b1),    				// 1-bit Clock enable input
+      .R(~m_axi_aresetn),   		// 1-bit Synchronous reset input
+      .D(delayed_data[k][i])        // 1-bit Data input
+   );
+   	end
+   end
+   endgenerate
+   
+   
+	// channel A axi_stream logic
 	always @(posedge m_axi_aclk)
     begin
     	if (~m_axi_aresetn) 
-    		valid_i	<= 2'b0;
-    	else
-			valid_i	<= {data_en_i, valid_i[1]};
-	end	
+        	m_axi_tdata_chA_i <= 32'b0;	
+        else begin	
+			if (m_axi_tready_chA && data_en_i && ~or_a) begin //~adc_rdy_a[1]
+				m_axi_tdata_chA_i <= (M_AXI_DATA_WIDTH == 16) ? {delayed_data[10][27:14]} : {msb_bits, delayed_data[10][27:14]};
+				m_axi_tvalid_chA_i <= data_en_i;
+			end else begin 
+				m_axi_tvalid_chA_i <= 1'b0;
+        	end	
+		end
+	end
 
 	// channel B axi_stream logic
 	always @(posedge m_axi_aclk)
@@ -151,29 +183,14 @@
     	if (~m_axi_aresetn)
         	m_axi_tdata_chB_i <= 32'b0;
         else begin	
-    		if (m_axi_tready && data_en_i && ~or_b) begin
-					m_axi_tdata_chB_i <= (M_AXI_DATA_WIDTH == 16) ? {ddr_data_q2} : {msb_bits, ddr_data_q2};
-					m_axi_tvalid_chB_i <= valid_i[1];
+    		if (m_axi_tready_chB && data_en_i && ~or_b) begin
+					m_axi_tdata_chB_i <= (M_AXI_DATA_WIDTH == 16) ? {delayed_data[10][13:0]} : {msb_bits, delayed_data[10][13:0]};
+					m_axi_tvalid_chB_i <= data_en_i;
 			end else begin
 					m_axi_tvalid_chB_i <= 1'b0;
 			end	
 		end
 	end				
-				
-	// channel A axi_stream logic
-	always @(posedge m_axi_aclk)
-    begin
-    	if (~m_axi_aresetn) 
-        	m_axi_tdata_chA_i <= 32'b0;	
-        else begin	
-			if (m_axi_tready && data_en_i && ~adc_rdy_a[1]) begin
-				m_axi_tdata_chA_i <= (M_AXI_DATA_WIDTH == 16) ? {ddr_data_q1} : {msb_bits, ddr_data_q1};
-				m_axi_tvalid_chA_i <= valid_i[0];
-			end else begin 
-				m_axi_tvalid_chA_i <= 1'b0;
-        	end	
-		end
-	end
 	//**************************************************
 	
 	assign m_axis_aclk = m_axi_aclk;

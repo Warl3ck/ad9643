@@ -40,13 +40,14 @@ module top_module
         output								s_axi_rvalid,
         // AXI-stream
         input								m_axis_aresetn,
-        input          						m_axis_tready,
         output								m_axis_aclk,
         output								adc_ready,
         // channel A
+        input          						m_axis_tready_chA,
         output 								m_axis_tvalid_chA,
 		output 	[15:0] 						m_axis_tdata_chA,
 		// channel B
+		input          						m_axis_tready_chB,
 		output 								m_axis_tvalid_chB,
 		output 	[15:0] 						m_axis_tdata_chB
      );
@@ -76,18 +77,18 @@ module top_module
         	.data_out			(single_data)
     	);       
 
-	// IDELAY_REGS MODULE
-//	dat_delay #(.DATA_WIDTH(DATA_WIDTH))
-//	dat_delay_inst 
-//		(
-//			.adc_dat_in			(single_data),
-//			.adc_or_in			(adc_or_in_i),
-//			.clk_del			(delay_clk_200M),
-//			.rst_idelay 		(delay_rst_i),
-//			.rdy				(),
-//			.adc_or_out			(idelay_or),
-//			.adc_dat_out 		(idelay_data)
-//		);
+	// IDELAYE MODULE
+	dat_delay #(.DATA_WIDTH(DATA_WIDTH))
+	dat_delay_inst 
+		(
+			.adc_dat_in			(single_data),
+			.adc_or_in			(adc_or_in_i),
+			.clk_del			(delay_clk_200M),
+			.rst_idelay 		(delay_rst_i),
+			.rdy				(),
+			.adc_or_out			(idelay_or),
+			.adc_dat_out 		(idelay_data)
+		);
 
 	// AXI_LITE MODULE
 	axi_lite #(.C_S_AXI_DATA_WIDTH(AXI_LITE_DATA_WIDTH), .C_S_AXI_ADDR_WIDTH(AXI_LITE_ADDR_WIDTH))
@@ -127,18 +128,19 @@ module top_module
     	(
 			.s_axi_aclk			(s_axi_aclk),	
 			.m_axi_aclk			(clk_i),
-			.adc_din			(single_data),
+			.adc_din			(idelay_data),//(single_data),
 			.ddr_data_en		(data_en_i),
-			.adc_or_in			(adc_or_in_i),
+			.adc_or_in			(idelay_or), //(adc_or_in_i),
 			.adc_or_state		(adc_or_state_i),
 			.adc_data_rdy		(adc_ready),
 			.m_axis_aclk		(m_axis_aclk),
 			.m_axi_aresetn		(m_axis_aresetn),
-			.m_axi_tready		(m_axis_tready),
 			// channel A
+			.m_axi_tready_chA	(m_axis_tready_chA),
 			.m_axi_tvalid_chA	(m_axis_tvalid_chA), 
 			.m_axi_tdata_chA	(m_axis_tdata_chA),
 			// channel B
+			.m_axi_tready_chB	(m_axis_tready_chB),
 			.m_axi_tvalid_chB	(m_axis_tvalid_chB),
 			.m_axi_tdata_chB	(m_axis_tdata_chB)
     	);

@@ -322,13 +322,14 @@
 	end    
 
 	// adc or reg
-	always @( posedge s_axi_aclk )
+	always @( posedge s_axi_aclk)
 	begin
-		if ( s_axi_aresetn == 1'b0 )
+		if ( ~s_axi_aresetn || slv_reg_rden)
 			slv_reg1 <= 0;
-		else	
-			slv_reg1[0] <= adc_or_state[0]; // channel B
-			slv_reg1[1] <= adc_or_state[1]; // channel A
+		else if (adc_or_state[0])
+			slv_reg1[0] <= 1'b1; // channel B
+		else if (adc_or_state[1])
+			slv_reg1[1] <= 1'b1; // channel A
 	end	
 
 	assign delay_rst = slv_reg0[1]; 
