@@ -115,7 +115,6 @@
       .src_in(ddr_data_en)		
    );
 
-	
    
 	// IDDR Register
     genvar j;
@@ -147,7 +146,7 @@
 	genvar i,k;
     generate
     	for (i = 0; i < 2*M_AXI_DATA_WIDTH; i = i + 1) begin
-    		for (k = 0; k < 11; k = k + 1) begin
+    		for (k = 0; k < 10; k = k + 1) begin
 	FDRE #(
       .INIT(1'b0) 					// Initial value of register (1'b0 or 1'b1)
    ) FDRE_inst (

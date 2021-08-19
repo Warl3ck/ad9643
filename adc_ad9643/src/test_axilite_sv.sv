@@ -26,7 +26,7 @@ module testbench();
   	// Reset signal
   	bit   reset;
   	// lvds data signal
-  	reg	[DATA_WIDTH-1:0] data_p;
+  	reg	[DATA_WIDTH-1:0] data_p = 0;
 	reg	[DATA_WIDTH-1:0] data_n;
 	// lvds overflow adc
 	bit adc_or_in_p;
@@ -78,7 +78,6 @@ module testbench();
   		adc_or_in_p		<= 1'b0;
   		#str_aresetn
   	@(posedge clock_p);
-		data_p 			<= 0;
 		#195.3ns // channel B 
 //		#198.55ns // channel A
 		adc_or_in_p		<= 1'b1;
@@ -211,7 +210,7 @@ axi4stream_vip_1_slv_t 	slave_agent;
 
 
 
-// axi-stream vip
+// axi-stream vip_0
 initial begin
 	slv_agent = new("slave vip agent",testbench.axi4stream_vip_0_inst.inst.IF);
 	slv_agent.start_slave();
@@ -226,7 +225,7 @@ initial begin
  	slv_agent.driver.send_tready(ready_gen);
 end
 
-
+// axi-stream vip_1
 initial begin
 	slave_agent = new("slave vip agent",testbench.axi4stream_vip_1_inst.inst.IF);
 	slave_agent.start_slave();
