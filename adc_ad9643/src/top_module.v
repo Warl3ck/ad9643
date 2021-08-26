@@ -54,12 +54,12 @@ module top_module
 
 	wire        				clk_i;
 	wire 	[DATA_WIDTH-1:0] 	single_data, idelay_data;
-	wire						data_en_i;
 	// OR
 	wire 						adc_or_in_i, idelay_or;
 	//
 	wire	[1:0]				adc_or_state_i;
 	wire 						delay_rst_i;
+	wire						data_valid_i;
 	
 	
 	// LVDS MODULE
@@ -97,7 +97,7 @@ module top_module
 			// user ports
 			.adc_or_state		(adc_or_state_i),
 			.delay_rst			(delay_rst_i),
-    		.data_en			(data_en_i),
+    		.data_valid_en		(data_valid_i),
 			// Ports of Axi Slave Bus Interface S_AXI
 			.s_axi_aclk			(s_axi_aclk),
 			.s_axi_aresetn		(s_axi_aresetn),
@@ -129,7 +129,7 @@ module top_module
 			.s_axi_aclk			(s_axi_aclk),	
 			.m_axi_aclk			(clk_i),
 			.adc_din			(idelay_data),//(single_data),
-			.ddr_data_en		(data_en_i),
+			.data_valid			(data_valid_i),
 			.adc_or_in			(idelay_or), //(adc_or_in_i),
 			.adc_or_state		(adc_or_state_i),
 			.adc_data_rdy		(adc_ready),

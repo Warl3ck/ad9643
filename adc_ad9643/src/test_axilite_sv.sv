@@ -54,13 +54,13 @@ module testbench();
     xil_axi_ulong   	addr2 = 32'h00000004;
     xil_axi_prot_t  	prot  = 0;
     xil_axi_resp_t  	resp;
-    bit [31:0]      	data_wr1 = 32'h01234561;
-    bit [31:0]      	data_wr2 = 32'h89ABCDE2;
+    bit [31:0]      	data_wr1 = 32'h01234560;
+    bit [31:0]      	data_wr2 = 32'h89ABCDE1;
     bit [31:0]      	data_rd1;
     bit [31:0]      	data_rd2;
     axi4stream_ready_gen ready_gen;
 
-  // s_axi aresetn
+  // axi aresetn
   initial begin
     reset 			<= 1'b0;
     m_axis_aresetn 	<= 1'b0;
@@ -71,15 +71,14 @@ module testbench();
   end
   
   
-  
   // axi_stream
   initial begin
   		m_axis_aresetn	<= 1'b0;
   		adc_or_in_p		<= 1'b0;
   		#str_aresetn
   	@(posedge clock_p);
-		#195.3ns // channel B 
-//		#198.55ns // channel A
+		#195.3ns 			// channel B 
+//		#198.55ns 			// channel A
 		adc_or_in_p		<= 1'b1;
 		#(period_adc_clk/2)
 		adc_or_in_p		<= 1'b0;
@@ -87,15 +86,6 @@ module testbench();
 		adc_or_in_p		<= 1'b1;
 		#(period_adc_clk/2)
 		adc_or_in_p		<= 1'b0;
-		// 2 times
-//		#201.785ns
-//		adc_or_in_p		<= 1'b1;
-//		#(period_adc_clk*6)
-//		adc_or_in_p		<= 1'b0;
-//		#351.767ns
-//		m_axis_aresetn 	<= 1'b0;
-//		#str_aresetn
-//		m_axis_aresetn 	<= 1'b1;
   end
   
   assign adc_or_in_n = ~adc_or_in_p;
@@ -210,34 +200,34 @@ axi4stream_vip_1_slv_t 	slave_agent;
 
 
 
-// axi-stream vip_0
+// axi-stream vip_0 ch_A
 initial begin
 	slv_agent = new("slave vip agent",testbench.axi4stream_vip_0_inst.inst.IF);
 	slv_agent.start_slave();
 	ready_gen = slv_agent.driver.create_ready("ready_gen");
  	ready_gen.set_ready_policy(XIL_AXI4STREAM_READY_GEN_OSC);
- 	ready_gen.set_low_time(1);
- 	ready_gen.set_high_time(200);
+ 	ready_gen.set_low_time(2);
+ 	ready_gen.set_high_time(25);
  	slv_agent.driver.send_tready(ready_gen);
- 	ready_gen = slv_agent.driver.create_ready("ready_gen 2");
- 	ready_gen.set_ready_policy(XIL_AXI4STREAM_READY_GEN_SINGLE);
- 	ready_gen.set_high_time(100);
- 	slv_agent.driver.send_tready(ready_gen);
+// 	ready_gen = slv_agent.driver.create_ready("ready_gen 2");
+// 	ready_gen.set_ready_policy(XIL_AXI4STREAM_READY_GEN_SINGLE);
+// 	ready_gen.set_high_time(100);
+// 	slv_agent.driver.send_tready(ready_gen);
 end
 
-// axi-stream vip_1
+// axi-stream vip_1 ch_B
 initial begin
 	slave_agent = new("slave vip agent",testbench.axi4stream_vip_1_inst.inst.IF);
 	slave_agent.start_slave();
 	ready_gen = slave_agent.driver.create_ready("ready_gen");
  	ready_gen.set_ready_policy(XIL_AXI4STREAM_READY_GEN_OSC);
- 	ready_gen.set_low_time(1);
- 	ready_gen.set_high_time(200);
+ 	ready_gen.set_low_time(3);
+ 	ready_gen.set_high_time(25);
  	slave_agent.driver.send_tready(ready_gen);
- 	ready_gen = slave_agent.driver.create_ready("ready_gen 2");
- 	ready_gen.set_ready_policy(XIL_AXI4STREAM_READY_GEN_SINGLE);
- 	ready_gen.set_high_time(100);
- 	slave_agent.driver.send_tready(ready_gen);
+// 	ready_gen = slave_agent.driver.create_ready("ready_gen 2");
+// 	ready_gen.set_ready_policy(XIL_AXI4STREAM_READY_GEN_SINGLE);
+// 	ready_gen.set_high_time(10);
+// 	slave_agent.driver.send_tready(ready_gen);
 end
 
 

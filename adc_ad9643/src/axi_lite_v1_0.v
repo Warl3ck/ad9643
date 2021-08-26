@@ -9,33 +9,34 @@
 		parameter integer C_S_AXI_ADDR_WIDTH	= 4
 	)
 	(
-		input 	wire  [1:0] adc_or_state,
-		output	wire  delay_rst,
-		output 	wire  data_en,
+		// user ports
+		input 	wire	[1:0] adc_or_state,
+		output	wire  	delay_rst,
+		output 	wire  	data_valid_en,
 		// Global Clock Signal
-		input 	wire  s_axi_aclk,
+		input 	wire  	s_axi_aclk,
 		// Global Reset Signal. This Signal is Active LOW
-		input 	wire  s_axi_aresetn,
+		input 	wire  	s_axi_aresetn,
 		// Write address (issued by master, acceped by Slave)
-		input 	wire [C_S_AXI_ADDR_WIDTH-1 : 0] s_axi_awaddr,
-		input 	wire [2 : 0] s_axi_awprot,
-		input 	wire  s_axi_awvalid,
-		output	wire  s_axi_awready,
-		input 	wire [C_S_AXI_DATA_WIDTH-1 : 0] s_axi_wdata,   
-		input 	wire [(C_S_AXI_DATA_WIDTH/8)-1 : 0] s_axi_wstrb,
-		input 	wire  s_axi_wvalid,
-		output 	wire  s_axi_wready,
-		output 	wire [1 : 0] s_axi_bresp,
-		output 	wire  s_axi_bvalid,
-		input 	wire  s_axi_bready,
-		input 	wire [C_S_AXI_ADDR_WIDTH-1 : 0] s_axi_araddr,
-		input 	wire [2 : 0] s_axi_arprot,
-		input 	wire  s_axi_arvalid,
-		output 	wire  s_axi_arready,
-		output 	wire [C_S_AXI_DATA_WIDTH-1 : 0] s_axi_rdata,
-		output 	wire [1 : 0] s_axi_rresp,
-		output 	wire  s_axi_rvalid,
-		input 	wire  s_axi_rready
+		input 	wire 	[C_S_AXI_ADDR_WIDTH-1 : 0] s_axi_awaddr,
+		input 	wire 	[2 : 0] s_axi_awprot,
+		input 	wire  	s_axi_awvalid,
+		output	wire  	s_axi_awready,
+		input 	wire 	[C_S_AXI_DATA_WIDTH-1 : 0] s_axi_wdata,   
+		input 	wire 	[(C_S_AXI_DATA_WIDTH/8)-1 : 0] s_axi_wstrb,
+		input 	wire  	s_axi_wvalid,
+		output 	wire  	s_axi_wready,
+		output 	wire 	[1 : 0] s_axi_bresp,
+		output 	wire  	s_axi_bvalid,
+		input 	wire  	s_axi_bready,
+		input 	wire 	[C_S_AXI_ADDR_WIDTH-1 : 0] s_axi_araddr,
+		input 	wire 	[2 : 0] s_axi_arprot,
+		input 	wire  	s_axi_arvalid,
+		output 	wire  	s_axi_arready,
+		output 	wire 	[C_S_AXI_DATA_WIDTH-1 : 0] s_axi_rdata,
+		output 	wire 	[1 : 0] s_axi_rresp,
+		output 	wire  	s_axi_rvalid,
+		input 	wire  	s_axi_rready
 	);
 
 	// AXI4LITE signals
@@ -327,13 +328,13 @@
 		if ( ~s_axi_aresetn || slv_reg_rden)
 			slv_reg1 <= 0;
 		else if (adc_or_state[0])
-			slv_reg1[0] <= 1'b1; // channel B
+			slv_reg1[0] <= 1'b1; // channel A
 		else if (adc_or_state[1])
-			slv_reg1[1] <= 1'b1; // channel A
+			slv_reg1[1] <= 1'b1; // channel B
 	end	
 
-	assign delay_rst = slv_reg0[1]; 
-	assign data_en = slv_reg0[0];
+	assign data_valid_en = ~slv_reg0[0];
+	assign delay_rst = slv_reg0[2]; 
 	
 	endmodule
 

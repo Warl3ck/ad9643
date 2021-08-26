@@ -9,7 +9,7 @@
 		input 	wire 	s_axi_aclk,	
 		input	wire	m_axi_aclk,
 		input 	wire 	[M_AXI_DATA_WIDTH - 1 : 0] adc_din,
-		input 	wire 	ddr_data_en,
+		input 	wire 	data_valid,
 		input	wire	adc_or_in,
 		output	wire	[1:0] adc_or_state,
 		// Ports of Axi Master Bus Interface M_AXI
@@ -26,27 +26,24 @@
 		output 	wire 	[15:0] m_axi_tdata_chB
 	);
 	
-	wire	data_en_i;
 	wire	adc_dat_rdy_i;
 	reg		[((M_AXI_DATA_WIDTH == 16) ? 16-M_AXI_DATA_WIDTH:0)-1:0]	msb_bits;
 	wire 	[M_AXI_DATA_WIDTH-1:0]	ddr_data_q1;
 	wire 	[M_AXI_DATA_WIDTH-1:0]	ddr_data_q2;
 	wire	[2*M_AXI_DATA_WIDTH-1:0] ddr_data;
+	wire	data_valid_i;
+	reg		data_valid_z;
 	reg		[15:0]	m_axi_tdata_chA_i;
 	reg		[15:0]	m_axi_tdata_chB_i;
 	wire	[2*M_AXI_DATA_WIDTH-1:0] delayed_data [0:10];
-	reg		m_axi_tvalid_chA_i;
-	reg		m_axi_tvalid_chB_i;
 	// or
 	wire 	or_b, or_a; 
 	wire	[1:0] adc_or_ab_i;
 	reg 	adc_rdy_a, adc_rdy_b;
-					
+			
 	initial
 	begin
 		msb_bits = 0;
-		m_axi_tvalid_chA_i = 1'b0;
-		m_axi_tvalid_chB_i = 1'b0;
 	end
 	
 	//************************************************** ADC_OR SECTION 
@@ -57,8 +54,8 @@
       .INIT_Q2(1'b0),       // Initial value of Q2: 1'b0 or 1'b1
       .SRTYPE("SYNC")       // Set/Reset type: "SYNC" or "ASYNC" 
    ) IDDR_or (
-      .Q1(or_b), 			// 1-bit output for positive edge of clock
-      .Q2(or_a),  			// 1-bit output for negative edge of clock
+      .Q1(or_a), 			// 1-bit output for positive edge of clock
+      .Q2(or_b),  			// 1-bit output for negative edge of clock
       .C(m_axi_aclk),       // 1-bit clock input
       .CE(1'b1),    		// 1-bit clock enable input
       .D(adc_or_in),   		// 1-bit DDR data input
@@ -66,7 +63,7 @@
       .S(1'b0)  			// 1-bit set
  	);
 
-	assign adc_or_ab_i = {or_a, or_b};
+	assign adc_or_ab_i = {or_b, or_a};
 	
 	// cdc adc_or
 	xpm_cdc_array_single #(
@@ -100,7 +97,7 @@
 	//**************************************************
 
 	//************************************************** ADC_DATA and create valid signals
-	// cdc ddr data_enable
+	// cdc data_valid
 	xpm_cdc_single #(
       .DEST_SYNC_FF(2),   		// DECIMAL; range: 2-10
       .INIT_SYNC_FF(0),   		// DECIMAL; 0=disable simulation init values, 1=enable simulation init values
@@ -109,18 +106,17 @@
    )
    xpm_cdc_single_inst 
    (
-      .dest_out(data_en_i), 
+      .dest_out(data_valid_i), 
       .dest_clk(m_axi_aclk), 	
       .src_clk(s_axi_aclk), 	
-      .src_in(ddr_data_en)		
+      .src_in(data_valid)		
    );
 
    
 	// IDDR Register
     genvar j;
     generate
-    	for (j = 0; j < M_AXI_DATA_WIDTH; j = j + 1)   
-    		begin
+    	for (j = 0; j < M_AXI_DATA_WIDTH; j = j + 1) begin
     IDDR #(
       .DDR_CLK_EDGE("SAME_EDGE_PIPELINED"),
       .INIT_Q1(1'b0),       	// Initial value of Q1: 1'b0 or 1'b1
@@ -159,45 +155,43 @@
    	end
    end
    endgenerate
-   
-   
+    
+	
+	always @(posedge m_axi_aclk)
+    begin
+    	if (~m_axi_aresetn) 
+        	data_valid_z <= 1'b0;	
+        else 
+			data_valid_z <= data_valid_i;
+	end
+	
 	// channel A axi_stream logic
 	always @(posedge m_axi_aclk)
     begin
     	if (~m_axi_aresetn) 
         	m_axi_tdata_chA_i <= 32'b0;	
-        else begin	
-			if (m_axi_tready_chA && data_en_i && ~or_a) begin //~adc_rdy_a[1]
-				m_axi_tdata_chA_i <= (M_AXI_DATA_WIDTH == 16) ? {delayed_data[10][27:14]} : {msb_bits, delayed_data[10][27:14]};
-				m_axi_tvalid_chA_i <= data_en_i;
-			end else begin 
-				m_axi_tvalid_chA_i <= 1'b0;
-        	end	
-		end
+        else if (m_axi_tready_chA && !or_a) 
+			m_axi_tdata_chA_i <= (M_AXI_DATA_WIDTH == 16) ? {delayed_data[10][2*M_AXI_DATA_WIDTH-1:M_AXI_DATA_WIDTH]} : {msb_bits, delayed_data[10][2*M_AXI_DATA_WIDTH-1:M_AXI_DATA_WIDTH]};
 	end
+
 
 	// channel B axi_stream logic
 	always @(posedge m_axi_aclk)
     begin
-    	if (~m_axi_aresetn)
+    	if (!m_axi_aresetn)
         	m_axi_tdata_chB_i <= 32'b0;
-        else begin	
-    		if (m_axi_tready_chB && data_en_i && ~or_b) begin
-					m_axi_tdata_chB_i <= (M_AXI_DATA_WIDTH == 16) ? {delayed_data[10][13:0]} : {msb_bits, delayed_data[10][13:0]};
-					m_axi_tvalid_chB_i <= data_en_i;
-			end else begin
-					m_axi_tvalid_chB_i <= 1'b0;
-			end	
-		end
-	end				
+        else if (m_axi_tready_chB && !or_b)
+			m_axi_tdata_chB_i <= (M_AXI_DATA_WIDTH == 16) ? {delayed_data[10][M_AXI_DATA_WIDTH-1:0]} : {msb_bits, delayed_data[10][M_AXI_DATA_WIDTH-1:0]};
+	end	
+	
 	//**************************************************
 	
 	assign m_axis_aclk = m_axi_aclk;
 	assign adc_data_rdy = ~adc_dat_rdy_i;
 	// channel A out
 	assign m_axi_tdata_chA = m_axi_tdata_chA_i;
-	assign m_axi_tvalid_chA = m_axi_tvalid_chA_i;
+	assign m_axi_tvalid_chA = data_valid_z;
 	// channel B out
 	assign m_axi_tdata_chB = m_axi_tdata_chB_i;
-	assign m_axi_tvalid_chB = m_axi_tvalid_chB_i;
+	assign m_axi_tvalid_chB = data_valid_z;
 	endmodule
