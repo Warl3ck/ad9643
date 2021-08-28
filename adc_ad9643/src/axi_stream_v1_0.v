@@ -170,7 +170,7 @@
     begin
     	if (~m_axi_aresetn) 
         	m_axi_tdata_chA_i <= 32'b0;	
-        else if (m_axi_tready_chA && !or_a) 
+        else if (m_axi_tready_chA && data_valid_i && !or_a) 
 			m_axi_tdata_chA_i <= (M_AXI_DATA_WIDTH == 16) ? {delayed_data[10][2*M_AXI_DATA_WIDTH-1:M_AXI_DATA_WIDTH]} : {msb_bits, delayed_data[10][2*M_AXI_DATA_WIDTH-1:M_AXI_DATA_WIDTH]};
 	end
 
@@ -180,7 +180,7 @@
     begin
     	if (!m_axi_aresetn)
         	m_axi_tdata_chB_i <= 32'b0;
-        else if (m_axi_tready_chB && !or_b)
+        else if (m_axi_tready_chB && data_valid_i && !or_b)
 			m_axi_tdata_chB_i <= (M_AXI_DATA_WIDTH == 16) ? {delayed_data[10][M_AXI_DATA_WIDTH-1:0]} : {msb_bits, delayed_data[10][M_AXI_DATA_WIDTH-1:0]};
 	end	
 	
