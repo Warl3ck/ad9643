@@ -50,7 +50,7 @@
 	reg [C_S_AXI_DATA_WIDTH-1 : 0] 	axi_rdata;
 	reg [1 : 0] 					axi_rresp;
 	reg  							axi_rvalid;
-
+	wire [1:0]						adc_or_i;
 
 	localparam integer ADDR_LSB = (C_S_AXI_DATA_WIDTH/32) + 1;
 	localparam integer OPT_MEM_ADDR_BITS = 1;
@@ -322,17 +322,31 @@
 	    end
 	end    
 
-	// adc or reg
-	always @( posedge s_axi_aclk)
+ 	// adc or latch
+	genvar i;
+    generate
+    	for (i = 0; i < 2; i = i + 1) begin
+   LDCE #(
+      .INIT(1'b0) 
+   ) LDCE_inst (
+      .Q(adc_or_i[i]),      					// Data output
+      .CLR(~s_axi_aresetn || slv_reg_rden),  	// Asynchronous preset/set input
+      .D(adc_or_state[i]),      				// Data input
+      .G(adc_or_state[i]),      				// Gate input
+      .GE(1'b1)     							// Gate enable input
+   );
+   end 
+   endgenerate
+   
+   	always @( posedge s_axi_aclk)
 	begin
-		if ( ~s_axi_aresetn || slv_reg_rden)
+		if ( ~s_axi_aresetn || slv_reg_rden )
 			slv_reg1 <= 0;
-		else if (adc_or_state[0])
-			slv_reg1[0] <= 1'b1; // channel A
-		else if (adc_or_state[1])
-			slv_reg1[1] <= 1'b1; // channel B
-	end	
-
+		else
+			slv_reg1 <= adc_or_i;
+	end
+   
+   
 	assign data_valid_en = ~slv_reg0[0];
 	assign delay_rst = slv_reg0[2]; 
 	

@@ -4,9 +4,9 @@
 import axi_vip_pkg::*;
 import axi_vip_0_pkg::*;
 // axi-stream
-import axi4stream_vip_pkg::*;
-import axi4stream_vip_0_pkg::*;
-import axi4stream_vip_1_pkg::*;
+//import axi4stream_vip_pkg::*;
+//import axi4stream_vip_0_pkg::*;
+//import axi4stream_vip_1_pkg::*;
 
 
 module testbench();
@@ -44,7 +44,7 @@ module testbench();
 	bit		 	m_axi_rvalid, m_axi_rready;
 	// axi stream
 	bit			m_axis_aresetn, m_axis_aclk;
-	bit 		m_axis_tvalid_chA_i, m_axis_tvalid_chB;
+	bit 		m_axis_tvalid_chA_i, m_axis_tvalid_chB_i;
 	bit			m_axis_tready_chA_i, m_axis_tready_chB_i;
 	bit	[15:0]	m_axis_tdata_chA_i, m_axis_tdata_chB_i;
 
@@ -58,7 +58,7 @@ module testbench();
     bit [31:0]      	data_wr2 = 32'h89ABCDE1;
     bit [31:0]      	data_rd1;
     bit [31:0]      	data_rd2;
-    axi4stream_ready_gen ready_gen;
+//    axi4stream_ready_gen ready_gen;
 
   // axi aresetn
   initial begin
@@ -73,19 +73,24 @@ module testbench();
   
   // axi_stream
   initial begin
-  		m_axis_aresetn	<= 1'b0;
-  		adc_or_in_p		<= 1'b0;
-  		#str_aresetn
-  	@(posedge clock_p);
-		#195.3ns 			// channel B 
-//		#198.55ns 			// channel A
-		adc_or_in_p		<= 1'b1;
-		#(period_adc_clk/2)
-		adc_or_in_p		<= 1'b0;
-		#(period_adc_clk)
-		adc_or_in_p		<= 1'b1;
-		#(period_adc_clk/2)
-		adc_or_in_p		<= 1'b0;
+  	m_axis_aresetn	<= 1'b0;
+  	adc_or_in_p		<= 1'b0;
+  	#str_aresetn
+  @(posedge clock_p);
+//	#195.3ns 			// channel B 
+	#198.55ns 			// channel A
+	adc_or_in_p		<= 1'b1;
+	#(period_adc_clk*31)
+	adc_or_in_p		<= 1'b0;
+	#(period_adc_clk*5)
+	adc_or_in_p		<= 1'b1;
+	#(period_adc_clk/2)
+	adc_or_in_p		<= 1'b0;
+	//
+	#(period_adc_clk*1.5)
+	adc_or_in_p		<= 1'b1;
+	#(period_adc_clk)
+	adc_or_in_p		<= 1'b0;
   end
   
   assign adc_or_in_n = ~adc_or_in_p;
@@ -129,23 +134,23 @@ axi_vip_0 axi_vip_0_inst(
   .m_axi_rready		(m_axi_rready)
 );
 
-// axi_stream vip channel A
- axi4stream_vip_0 axi4stream_vip_0_inst(
-  .aclk				(m_axis_aclk),
-  .aresetn			(m_axis_aresetn),
-  .s_axis_tvalid	(m_axis_tvalid_chA_i),
-  .s_axis_tready	(m_axis_tready_chA_i),
-  .s_axis_tdata		(m_axis_tdata_chA_i)
-);
+//// axi_stream vip channel A
+// axi4stream_vip_0 axi4stream_vip_0_inst(
+//  .aclk				(m_axis_aclk),
+//  .aresetn			(m_axis_aresetn),
+//  .s_axis_tvalid	(m_axis_tvalid_chA_i),
+//  .s_axis_tready	(m_axis_tready_chA_i),
+//  .s_axis_tdata		(m_axis_tdata_chA_i)
+//);
 
-// axi_stream vip channel B
- axi4stream_vip_1 axi4stream_vip_1_inst(
-  .aclk				(m_axis_aclk),
-  .aresetn			(m_axis_aresetn),
-  .s_axis_tvalid	(m_axis_tvalid_chB_i),
-  .s_axis_tready	(m_axis_tready_chB_i),
-  .s_axis_tdata		(m_axis_tdata_chB_i)
-);
+//// axi_stream vip channel B
+// axi4stream_vip_1 axi4stream_vip_1_inst(
+//  .aclk				(m_axis_aclk),
+//  .aresetn			(m_axis_aresetn),
+//  .s_axis_tvalid	(m_axis_tvalid_chB_i),
+//  .s_axis_tready	(m_axis_tready_chB_i),
+//  .s_axis_tdata		(m_axis_tdata_chB_i)
+//);
 
 
 top_module DUT (
@@ -195,40 +200,40 @@ top_module DUT (
 
 
 axi_vip_0_mst_t 		master_agent;
-axi4stream_vip_0_slv_t 	slv_agent;
-axi4stream_vip_1_slv_t 	slave_agent;
+//axi4stream_vip_0_slv_t 	slv_agent;
+//axi4stream_vip_1_slv_t 	slave_agent;
 
 
 
 // axi-stream vip_0 ch_A
-initial begin
-	slv_agent = new("slave vip agent",testbench.axi4stream_vip_0_inst.inst.IF);
-	slv_agent.start_slave();
-	ready_gen = slv_agent.driver.create_ready("ready_gen");
- 	ready_gen.set_ready_policy(XIL_AXI4STREAM_READY_GEN_OSC);
- 	ready_gen.set_low_time(2);
- 	ready_gen.set_high_time(25);
- 	slv_agent.driver.send_tready(ready_gen);
-// 	ready_gen = slv_agent.driver.create_ready("ready_gen 2");
-// 	ready_gen.set_ready_policy(XIL_AXI4STREAM_READY_GEN_SINGLE);
-// 	ready_gen.set_high_time(100);
+//initial begin
+//	slv_agent = new("slave vip agent",testbench.axi4stream_vip_0_inst.inst.IF);
+//	slv_agent.start_slave();
+//	ready_gen = slv_agent.driver.create_ready("ready_gen");
+// 	ready_gen.set_ready_policy(XIL_AXI4STREAM_READY_GEN_OSC);
+// 	ready_gen.set_low_time(2);
+// 	ready_gen.set_high_time(25);
 // 	slv_agent.driver.send_tready(ready_gen);
-end
+//// 	ready_gen = slv_agent.driver.create_ready("ready_gen 2");
+//// 	ready_gen.set_ready_policy(XIL_AXI4STREAM_READY_GEN_SINGLE);
+//// 	ready_gen.set_high_time(100);
+//// 	slv_agent.driver.send_tready(ready_gen);
+//end
 
 // axi-stream vip_1 ch_B
-initial begin
-	slave_agent = new("slave vip agent",testbench.axi4stream_vip_1_inst.inst.IF);
-	slave_agent.start_slave();
-	ready_gen = slave_agent.driver.create_ready("ready_gen");
- 	ready_gen.set_ready_policy(XIL_AXI4STREAM_READY_GEN_OSC);
- 	ready_gen.set_low_time(3);
- 	ready_gen.set_high_time(25);
- 	slave_agent.driver.send_tready(ready_gen);
-// 	ready_gen = slave_agent.driver.create_ready("ready_gen 2");
-// 	ready_gen.set_ready_policy(XIL_AXI4STREAM_READY_GEN_SINGLE);
-// 	ready_gen.set_high_time(10);
+//initial begin
+//	slave_agent = new("slave vip agent",testbench.axi4stream_vip_1_inst.inst.IF);
+//	slave_agent.start_slave();
+//	ready_gen = slave_agent.driver.create_ready("ready_gen");
+// 	ready_gen.set_ready_policy(XIL_AXI4STREAM_READY_GEN_OSC);
+// 	ready_gen.set_low_time(3);
+// 	ready_gen.set_high_time(25);
 // 	slave_agent.driver.send_tready(ready_gen);
-end
+//// 	ready_gen = slave_agent.driver.create_ready("ready_gen 2");
+//// 	ready_gen.set_ready_policy(XIL_AXI4STREAM_READY_GEN_SINGLE);
+//// 	ready_gen.set_high_time(10);
+//// 	slave_agent.driver.send_tready(ready_gen);
+//end
 
 
 integer i;
